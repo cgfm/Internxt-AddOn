@@ -24,6 +24,11 @@ RUN \
 COPY --from=internxt-source /usr/local /usr/local
 COPY --from=internxt-source /app /app
 
+# Copy entrypoint scripts if they exist
+COPY --from=internxt-source /docker-entrypoint.sh* /
+COPY --from=internxt-source /entrypoint.sh* /
+COPY --from=internxt-source /start.sh* /
+
 # Copy root filesystem
 COPY rootfs /
 
