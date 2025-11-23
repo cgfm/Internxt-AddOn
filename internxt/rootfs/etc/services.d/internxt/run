@@ -40,17 +40,7 @@ bashio::log.info "Internxt User: ${INXT_USER}"
 bashio::log.info "WebDAV Protocol: ${WEBDAV_PROTOCOL}"
 bashio::log.info "WebDAV Port: ${WEBDAV_PORT}"
 
-# Start the Internxt WebDAV server
-# The internxt/webdav image uses the @internxt/cli package
-bashio::log.info "Logging into Internxt..."
-
-# Login using environment variables (non-interactive)
-if ! internxt login; then
-    bashio::log.error "Failed to login to Internxt"
-    bashio::exit.nok "Login failed"
-fi
-
-bashio::log.info "Starting WebDAV server..."
-
-# Start and keep the WebDAV server running in foreground
-exec internxt webdav-start
+# Use the official internxt/webdav entrypoint script
+# It handles login, webdav-config, and starts the server
+bashio::log.info "Starting via official internxt entrypoint..."
+exec /docker-entrypoint.sh
