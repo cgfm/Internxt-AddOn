@@ -1,14 +1,24 @@
-FROM internxt/webdav:latest
+# Multi-stage build - get internxt from their official image
+FROM internxt/webdav:latest AS internxt-source
+
+# Use Home Assistant base image
+ARG BUILD_FROM
+FROM ${BUILD_FROM}
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Install bashio for Home Assistant integration
+# Install requirements
 RUN \
     apk add --no-cache \
         bash \
         jq \
-    && apk add --no-cache --virtual .build-dependencies \
+        nodejs \
+        npm
+
+# Install bashio for Home Assistant integration
+RUN \
+    apk add --no-cache --virtual .build-dependencies \
         curl \
     && mkdir -p /tmp/bashio \
     && curl -L -s \
@@ -18,6 +28,10 @@ RUN \
     && ln -s /usr/lib/bashio/bashio /usr/bin/bashio \
     && rm -rf /tmp/bashio \
     && apk del --no-cache --purge .build-dependencies
+
+# Copy the internxt CLI and dependencies from official image
+COPY --from=internxt-source /usr/local /usr/local
+COPY --from=internxt-source /app /app
 
 # Copy root filesystem
 COPY rootfs /
