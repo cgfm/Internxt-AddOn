@@ -18,18 +18,7 @@ RUN \
         nodejs \
         npm
 
-# Install bashio for Home Assistant integration
-RUN \
-    apk add --no-cache --virtual .build-dependencies \
-        curl \
-    && mkdir -p /tmp/bashio \
-    && curl -L -s \
-        "https://github.com/hassio-addons/bashio/archive/v0.16.2.tar.gz" \
-        | tar -xzf - --strip 1 -C /tmp/bashio \
-    && mv /tmp/bashio/lib /usr/lib/bashio \
-    && ln -s /usr/lib/bashio/bashio /usr/bin/bashio \
-    && rm -rf /tmp/bashio \
-    && apk del --no-cache --purge .build-dependencies
+# Bashio is already included in Home Assistant base images, so we don't need to install it
 
 # Copy the internxt CLI and dependencies from official image
 COPY --from=internxt-source /usr/local /usr/local
