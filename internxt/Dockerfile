@@ -25,8 +25,8 @@ RUN \
     && rm -rf /tmp/bashio \
     && apk del --no-cache --purge .build-dependencies
 
-# Install internxt-webdav from npm
-RUN npm install -g @internxt/webdav-server
+# Install internxt CLI
+RUN npm install -g @internxt/cli
 
 # Copy root filesystem
 COPY rootfs /
