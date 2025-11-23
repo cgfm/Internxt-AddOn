@@ -1,5 +1,7 @@
 #!/usr/bin/env bashio
 
+bashio::log.info "Starting Internxt WebDAV server..."
+
 # Read configuration
 INXT_USER=$(bashio::config 'inxt_user')
 INXT_PASSWORD=$(bashio::config 'inxt_password')
@@ -7,8 +9,6 @@ INXT_TWOFACTORCODE=$(bashio::config 'inxt_twofactorcode')
 INXT_OTPTOKEN=$(bashio::config 'inxt_otptoken')
 WEBDAV_PORT=$(bashio::config 'webdav_port')
 WEBDAV_PROTOCOL=$(bashio::config 'webdav_protocol')
-
-bashio::log.info "Starting Internxt WebDAV server..."
 
 # Check required configuration
 if bashio::config.is_empty 'inxt_user'; then
@@ -19,7 +19,7 @@ if bashio::config.is_empty 'inxt_password'; then
     bashio::exit.nok "Internxt password is required!"
 fi
 
-# Set environment variables for the Internxt CLI
+# Set environment variables for the Internxt WebDAV Docker image
 export INXT_USER="${INXT_USER}"
 export INXT_PASSWORD="${INXT_PASSWORD}"
 export WEBDAV_PORT="${WEBDAV_PORT}"
@@ -39,10 +39,15 @@ bashio::log.info "Internxt User: ${INXT_USER}"
 bashio::log.info "WebDAV Protocol: ${WEBDAV_PROTOCOL}"
 bashio::log.info "WebDAV Port: ${WEBDAV_PORT}"
 
-# Login to Internxt (non-interactive using env vars)
-bashio::log.info "Logging into Internxt..."
-internxt login
-
-# Start the WebDAV server
-bashio::log.info "Enabling Internxt WebDAV server..."
-exec internxt webdav enable
+# Find and execute the internxt/webdav entrypoint
+# The original image's entrypoint should handle everything
+if [ -f /docker-entrypoint.sh ]; then
+    bashio::log.info "Starting via /docker-entrypoint.sh"
+    exec /docker-entrypoint.sh
+elif [ -f /entrypoint.sh ]; then
+    bashio::log.info "Starting via /entrypoint.sh"
+    exec /entrypoint.sh
+else
+    bashio::log.error "Could not find internxt/webdav entrypoint script!"
+    bashio::exit.nok "Missing entrypoint"
+fi
