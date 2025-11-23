@@ -8,23 +8,22 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apk add --no-cache \
     bash \
     jq \
-    curl \
     nodejs \
-    npm \
-    git
+    npm
 
 # Install bashio
-RUN curl -L https://github.com/hassio-addons/bashio/archive/v0.16.2.tar.gz | tar xzf - -C /tmp \
+RUN apk add --no-cache curl \
+    && curl -L https://github.com/hassio-addons/bashio/archive/v0.16.2.tar.gz | tar xzf - -C /tmp \
     && mv /tmp/bashio-0.16.2/lib /usr/lib/bashio \
     && ln -s /usr/lib/bashio/bashio /usr/bin/bashio \
-    && rm -rf /tmp/bashio-0.16.2
+    && rm -rf /tmp/bashio-0.16.2 \
+    && apk del curl
 
 # Install internxt-webdav from npm
 RUN npm install -g @internxt/webdav-server
 
-# Copy run script
-COPY run.sh /
-RUN chmod a+x /run.sh
+# Copy rootfs
+COPY rootfs /
 
 # Labels
 ARG BUILD_ARCH
@@ -52,5 +51,3 @@ LABEL \
     org.opencontainers.image.created=${BUILD_DATE} \
     org.opencontainers.image.revision=${BUILD_REF} \
     org.opencontainers.image.version=${BUILD_VERSION}
-
-CMD [ "/run.sh" ]
