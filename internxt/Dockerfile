@@ -1,8 +1,10 @@
+# Build argument must be declared before any FROM
+ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:latest
+
 # Multi-stage build - get internxt from their official image
 FROM internxt/webdav:latest AS internxt-source
 
 # Use Home Assistant base image
-ARG BUILD_FROM
 FROM ${BUILD_FROM}
 
 # Set shell
