@@ -26,6 +26,7 @@ Internxt is a privacy-focused cloud storage service. This add-on runs the Intern
 - `inxt_otptoken`: OTP secret key (base32) for automatic 2FA code generation (recommended for unattended use)
 - `webdav_port`: Port for the WebDAV server (default: 3005)
 - `webdav_protocol`: Protocol for the WebDAV server - `http` or `https` (default: https)
+- `log_level`: Log verbosity - `quiet`, `normal`, or `verbose` (default: normal)
 
 ### Example Configuration
 
@@ -48,13 +49,27 @@ webdav_protocol: https
 
 ## Usage
 
-After starting the add-on, you can connect to the WebDAV server at:
+After starting the add-on:
+
+1. Check the **Log** tab to find your WebDAV server URL and IP address
+2. The add-on will automatically send discovery information to Home Assistant
+3. Connect to the WebDAV server at:
 
 ```
 https://homeassistant.local:3005
 ```
 
+Or use the IP address shown in the logs:
+
+```
+https://YOUR_HA_IP:3005
+```
+
 No additional authentication is required - the server authenticates with your Internxt credentials.
+
+### Automatic Discovery
+
+The add-on supports Home Assistant's service discovery feature. Compatible integrations may automatically detect and suggest setting up the WebDAV connection.
 
 ## Support
 

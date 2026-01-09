@@ -14,6 +14,8 @@ startup: services
 boot: auto
 hassio_api: true
 hassio_role: default
+discovery:
+  - webdav
 ports:
   3005/tcp: 3005
 ports_description:
@@ -25,6 +27,7 @@ options:
   inxt_otptoken: ""
   webdav_port: 3005
   webdav_protocol: "https"
+  log_level: "normal"
 schema:
   inxt_user: email
   inxt_password: password
@@ -32,3 +35,4 @@ schema:
   inxt_otptoken: str?
   webdav_port: port
   webdav_protocol: list(http|https)
+  log_level: list(quiet|normal|verbose)

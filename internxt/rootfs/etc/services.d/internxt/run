@@ -10,6 +10,7 @@ INXT_TWOFACTORCODE=$(bashio::config 'inxt_twofactorcode')
 INXT_OTPTOKEN=$(bashio::config 'inxt_otptoken')
 WEBDAV_PORT=$(bashio::config 'webdav_port')
 WEBDAV_PROTOCOL=$(bashio::config 'webdav_protocol')
+LOG_LEVEL=$(bashio::config 'log_level')
 
 # Check required configuration
 if bashio::config.is_empty 'inxt_user'; then
@@ -40,7 +41,51 @@ bashio::log.info "Internxt User: ${INXT_USER}"
 bashio::log.info "WebDAV Protocol: ${WEBDAV_PROTOCOL}"
 bashio::log.info "WebDAV Port: ${WEBDAV_PORT}"
 
+# Get and display network information
+HOSTNAME=$(bashio::host.hostname)
+if bashio::var.has_value "${HOSTNAME}"; then
+    bashio::log.info "WebDAV Server URL: ${WEBDAV_PROTOCOL}://${HOSTNAME}:${WEBDAV_PORT}"
+fi
+
+# Try to get the local IP address
+LOCAL_IP=$(hostname -i 2>/dev/null | awk '{print $1}')
+if bashio::var.has_value "${LOCAL_IP}"; then
+    bashio::log.info "Add-on IP Address: ${LOCAL_IP}"
+    bashio::log.info "Alternative URL: ${WEBDAV_PROTOCOL}://${LOCAL_IP}:${WEBDAV_PORT}"
+fi
+
+# Send discovery information to Home Assistant
+bashio::log.info "Sending discovery information to Home Assistant..."
+if bashio::discovery "webdav" \
+    "host" "${HOSTNAME}" \
+    "port" "${WEBDAV_PORT}" \
+    "ssl" "$([ "${WEBDAV_PROTOCOL}" = "https" ] && echo "true" || echo "false")" \
+    "name" "Internxt WebDAV" \
+    "url" "${WEBDAV_PROTOCOL}://${HOSTNAME}:${WEBDAV_PORT}"; then
+    bashio::log.info "Discovery information sent successfully"
+else
+    bashio::log.warning "Failed to send discovery information (this is optional)"
+fi
+
 # Use the official internxt/webdav entrypoint script
 # It handles login, webdav-config, and starts the server
 bashio::log.info "Starting via official internxt entrypoint..."
-exec /docker-entrypoint.sh
+
+# Apply log filtering based on configuration
+case "${LOG_LEVEL}" in
+    quiet)
+        bashio::log.info "Log level: quiet (errors only)"
+        export LOG_FILTER_MODE="quiet"
+        exec /docker-entrypoint.sh 2>&1 | /usr/local/bin/log-filter.sh
+        ;;
+    verbose)
+        bashio::log.info "Log level: verbose (all logs)"
+        # No filtering, show everything
+        exec /docker-entrypoint.sh
+        ;;
+    *)
+        bashio::log.info "Log level: normal (filtered)"
+        export LOG_FILTER_MODE="normal"
+        exec /docker-entrypoint.sh 2>&1 | /usr/local/bin/log-filter.sh
+        ;;
+esac

@@ -76,6 +76,13 @@ If you've already set up 2FA and didn't save the key:
   - Default: `https`
   - **Recommended**: Use `https` for security
 
+- **log_level** (optional): Controls log verbosity
+  - Options: `quiet`, `normal`, `verbose`
+  - Default: `normal`
+  - `quiet`: Only errors and warnings (recommended for normal use)
+  - `normal`: Important messages, filters out verbose WebDAV operations
+  - `verbose`: All logs including every WebDAV request (useful for debugging)
+
 ### Example Configurations
 
 #### Without 2FA
@@ -95,6 +102,7 @@ inxt_password: my-internxt-password
 inxt_otptoken: JBSWY3DPEHPK3PXP
 webdav_port: 3005
 webdav_protocol: https
+log_level: normal
 ```
 
 #### With 2FA (Using Temporary Code)
@@ -118,17 +126,23 @@ webdav_protocol: https
 3. Go to the **Info** tab
 4. Click **Start**
 5. Check the **Log** tab to ensure it started successfully
+6. The log will display the WebDAV server URL and IP address for easy access
 
 ### Connecting to the WebDAV Server
 
-The WebDAV server will be available at:
+After starting the add-on, check the **Log** tab to find your WebDAV server URL. The log will display:
+- The complete WebDAV server URL (e.g., `https://homeassistant.local:3005`)
+- The internal IP address of the add-on
+- An alternative URL using the IP address
 
+You can also access the WebDAV server using these standard addresses:
+
+**Using hostname:**
 ```
 https://homeassistant.local:3005
 ```
 
-Or using your Home Assistant IP address:
-
+**Using IP address:**
 ```
 https://YOUR_HA_IP:3005
 ```
@@ -136,6 +150,15 @@ https://YOUR_HA_IP:3005
 If you configured `webdav_protocol: http`, use `http://` instead of `https://`.
 
 **Important**: No additional username/password is required when connecting to the WebDAV server. The authentication is handled by your Internxt credentials configured in the add-on.
+
+#### Automatic Discovery
+
+This add-on supports Home Assistant's service discovery feature. When the add-on starts:
+1. It automatically sends discovery information to Home Assistant
+2. Compatible integrations (like WebDAV or file sharing integrations) may detect the service
+3. You might see a notification in Home Assistant suggesting to set up the WebDAV connection
+
+**Note**: Not all WebDAV integrations support automatic discovery. If you don't see a discovery notification, you can still connect manually using the URLs above.
 
 ### Connecting from Different Clients
 
@@ -258,8 +281,15 @@ Enter the server URL (`https://homeassistant.local:3005`) in your chosen app.
 
 1. Check your internet connection speed
 2. Verify your Internxt account is active and not rate-limited
-3. Increase log level to `debug` to identify bottlenecks
+3. Set `log_level: verbose` in the configuration to see detailed operation logs
 4. Consider the limitations of WebDAV protocol for large files
+
+### Too Many Logs
+
+If the logs are too verbose:
+1. Set `log_level: quiet` to see only errors and warnings
+2. Set `log_level: normal` (default) for a balance between information and verbosity
+3. The add-on automatically filters out verbose WebDAV operation logs in normal and quiet modes
 
 ## Limitations
 
