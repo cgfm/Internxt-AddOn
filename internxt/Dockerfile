@@ -31,6 +31,9 @@ RUN chmod +x /docker-entrypoint.sh
 # Copy root filesystem
 COPY rootfs /
 
+# Ensure scripts are executable
+RUN chmod +x /etc/services.d/internxt/run /etc/services.d/internxt/finish /usr/local/bin/log-filter.sh
+
 # Build arguments
 ARG BUILD_ARCH
 ARG BUILD_DATE
