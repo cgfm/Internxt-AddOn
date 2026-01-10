@@ -2,7 +2,7 @@ name: "Internxt WebDAV"
 version: "1.0.0"
 slug: "internxt_webdav"
 description: "WebDAV server for Internxt cloud storage"
-url: "https://github.com/cgfm/internxt-addon"
+url: "https://github.com/cgfm/Internxt-AddOn"
 arch:
   - aarch64
   - amd64
