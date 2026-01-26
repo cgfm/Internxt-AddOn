@@ -1,5 +1,47 @@
-#!/usr/bin/execlineb -S0
-if { s6-test ${1} -ne 0 }
-if { s6-test ${1} -ne 256 }
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+#
+# Finish script for Internxt service
+# Handles restart delays to prevent rate limiting issues
+#
 
-s6-svscanctl -t /var/run/s6/services
+EXIT_CODE="${1:-0}"
+SIGNAL="${2:-0}"
+
+# File to track restart attempts for exponential backoff
+RESTART_COUNT_FILE="/tmp/internxt_restart_count"
+MAX_DELAY=300  # Maximum delay of 5 minutes
+
+# Read current restart count
+if [[ -f "$RESTART_COUNT_FILE" ]]; then
+    RESTART_COUNT=$(cat "$RESTART_COUNT_FILE")
+else
+    RESTART_COUNT=0
+fi
+
+# If exit was clean (0), reset counter
+if [[ "$EXIT_CODE" -eq 0 ]]; then
+    rm -f "$RESTART_COUNT_FILE"
+    exit 0
+fi
+
+# Increment restart counter
+RESTART_COUNT=$((RESTART_COUNT + 1))
+echo "$RESTART_COUNT" > "$RESTART_COUNT_FILE"
+
+# Calculate delay with exponential backoff: 5, 10, 20, 40, 80, 160, 300 seconds
+DELAY=$((5 * (2 ** (RESTART_COUNT - 1))))
+if [[ "$DELAY" -gt "$MAX_DELAY" ]]; then
+    DELAY=$MAX_DELAY
+fi
+
+bashio::log.warning "Service exited with code ${EXIT_CODE}. Waiting ${DELAY} seconds before restart (attempt ${RESTART_COUNT})..."
+sleep "$DELAY"
+
+# If we've failed too many times, terminate the whole add-on
+if [[ "$RESTART_COUNT" -ge 10 ]]; then
+    bashio::log.fatal "Service has failed ${RESTART_COUNT} times. Stopping add-on to prevent further rate limiting."
+    rm -f "$RESTART_COUNT_FILE"
+    # Signal s6 to bring down all services
+    exec s6-svscanctl -t /var/run/s6/services
+fi

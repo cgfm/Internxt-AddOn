@@ -1,6 +1,9 @@
 #!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
 
+# Reset restart counter on service start
+rm -f /tmp/internxt_restart_count
+
 bashio::log.info "Starting Internxt WebDAV server..."
 
 # Read configuration
@@ -72,11 +75,15 @@ fi
 bashio::log.info "Starting via official internxt entrypoint..."
 
 # Apply log filtering based on configuration
+# Note: We use pipefail and capture exit code to ensure failures are detected
+set -o pipefail
+
 case "${LOG_LEVEL}" in
     quiet)
         bashio::log.info "Log level: quiet (errors only)"
         export LOG_FILTER_MODE="quiet"
-        exec /docker-entrypoint.sh 2>&1 | /usr/local/bin/log-filter.sh
+        /docker-entrypoint.sh 2>&1 | /usr/local/bin/log-filter.sh
+        exit_code=$?
         ;;
     verbose)
         bashio::log.info "Log level: verbose (all logs)"
@@ -86,6 +93,10 @@ case "${LOG_LEVEL}" in
     *)
         bashio::log.info "Log level: normal (filtered)"
         export LOG_FILTER_MODE="normal"
-        exec /docker-entrypoint.sh 2>&1 | /usr/local/bin/log-filter.sh
+        /docker-entrypoint.sh 2>&1 | /usr/local/bin/log-filter.sh
+        exit_code=$?
         ;;
 esac
+
+# Exit with the entrypoint's exit code so s6 finish script handles it properly
+exit "${exit_code:-1}"

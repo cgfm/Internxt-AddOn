@@ -1,5 +1,5 @@
 name: "Internxt WebDAV"
-version: "1.0.0"
+version: "1.1.0"
 slug: "internxt_webdav"
 description: "WebDAV server for Internxt cloud storage"
 url: "https://github.com/cgfm/Internxt-AddOn"
@@ -31,8 +31,8 @@ options:
 schema:
   inxt_user: email
   inxt_password: password
-  inxt_twofactorcode: str?
-  inxt_otptoken: str?
+  inxt_twofactorcode: password?
+  inxt_otptoken: password?
   webdav_port: port
   webdav_protocol: list(http|https)
   log_level: list(quiet|normal|verbose)
