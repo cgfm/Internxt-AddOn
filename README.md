@@ -1,3 +1,6 @@
+**Since all old lifetime planes don't have CLI access anymore I won't take any effort into this anymore. There understanding of lifetim seems to be lifetime of current version. I'd recommend to not give your money to them!**
+
+
 # Internxt WebDAV Add-on for Home Assistant
 
 Home Assistant add-on repository for Internxt WebDAV server.
